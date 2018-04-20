@@ -4,6 +4,7 @@ import tasktiger
 from django.conf import settings
 from django.core.management import BaseCommand
 from django.db.models import F
+from django.utils import timezone
 
 from scheduler.core.constants import TASK_STATUS
 from scheduler.core.models import Task, CrawlTask
@@ -19,7 +20,7 @@ class Command(BaseCommand):
                 status__in=(TASK_STATUS.WAITING, TASK_STATUS.PROCESSING),
                 stage__gt=F('stages_number')
             )
-            .update(status=TASK_STATUS.DONE)
+            .update(status=TASK_STATUS.DONE, finished_at=timezone.now())
          )
         print('{} tasks marked as DONE'.format(updated))
 
@@ -43,20 +44,22 @@ class Command(BaseCommand):
         conn = redis.Redis(decode_responses=True)
         tiger = tasktiger.TaskTiger(connection=conn)
         running_subtasks = CrawlTask.objects.filter(status=TASK_STATUS.PROCESSING)
-        unfinished_tasks = CrawlTask.objects.filter(status__in=(TASK_STATUS.WAITING, TASK_STATUS.PROCESSING))
-        for crawltask in unfinished_tasks:
-            tiger_task = tasktiger.Task.from_id(
-                tiger,
-                queue=settings.SCHEDULER_TASKTIGER_QUEUE,
-                state=tasktiger.ERROR,
-                task_id=crawltask.tiger_task_id,
-            )
-            if tiger_task is not None:
-                print('crawltasktask {} ({}-{}) marked as ERROR (bad tigertask found)'.format(
-                    crawltask.pk, crawltask.parent_task.name, crawltask.stage)
-                )
-                crawltask.status = TASK_STATUS.ERROR
-                crawltask.save(update_fields=['status'])
+
+        # TODO
+        # unfinished_tasks = CrawlTask.objects.filter(status__in=(TASK_STATUS.WAITING, TASK_STATUS.PROCESSING))
+        # for crawltask in unfinished_tasks:
+        #     tiger_task = tasktiger.Task.from_id(
+        #         tiger,
+        #         queue=settings.SCHEDULER_TASKTIGER_QUEUE,
+        #         state=tasktiger.ERROR,
+        #         task_id=crawltask.tiger_task_id,
+        #     )
+        #     if tiger_task is not None:
+        #         print('crawltasktask {} ({}-{}) marked as ERROR (bad tigertask found)'.format(
+        #             crawltask.pk, crawltask.parent_task.name, crawltask.stage)
+        #         )
+        #         crawltask.status = TASK_STATUS.ERROR
+        #         crawltask.save(update_fields=['status'])
 
         # Marking running crawltasks with dead tigertasks as ERROR
         for crawltask in running_subtasks:

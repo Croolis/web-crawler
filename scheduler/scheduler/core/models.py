@@ -1,7 +1,21 @@
 from django.db import models
+from django.utils import timezone
 
 from scheduler.core.constants import TASK_STATUS
 from scheduler.core.managers import TaskManager
+
+
+def elapsed_time(object):
+    finish_time = object.finished_at if object.finished_at else timezone.now()
+    seconds = (finish_time - object.created_at).total_seconds()
+    mins, secs = divmod(int(seconds), 60)
+    hours, mins = divmod(mins, 60)
+    values = [
+        '{}h'.format(hours) if hours else '',
+        '{}m'.format(mins) if mins else '',
+        '{}s'.format(secs) if secs else ''
+    ]
+    return ' '.join('{:>3}'.format(val) for val in values)
 
 
 class Task(models.Model):
@@ -14,6 +28,14 @@ class Task(models.Model):
     finished_at = models.DateTimeField(null=True, blank=True)
 
     objects = TaskManager()
+
+    @property
+    def sorted_crawltasks(self):
+        return self.crawl_tasks.order_by('stage')
+
+    @property
+    def running(self):
+        return elapsed_time(self)
 
     def __repr__(self):
         return '<Task: {}>'.format(self.name)
@@ -29,6 +51,10 @@ class CrawlTask(models.Model):
     tiger_task_id = models.CharField(null=True, max_length=64)
     created_at = models.DateTimeField(auto_now_add=True, blank=True)
     finished_at = models.DateTimeField(null=True, blank=True)
+
+    @property
+    def running(self):
+        return elapsed_time(self)
 
     def __repr__(self):
         return '<CrawlTask: {}, pk={}>'.format(self.parent_task.name, self.pk)

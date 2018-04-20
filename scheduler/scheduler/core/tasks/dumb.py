@@ -53,7 +53,8 @@ class DumbTaskProcessor:
             self.tiger,
             subtask,
             [crawltask.pk],
-            queue=settings.SCHEDULER_TASKTIGER_QUEUE
+            queue=settings.SCHEDULER_TASKTIGER_QUEUE,
+            hard_timeout=settings.SCHEDULER_TASKTIGER_TIMEOUT,
         )
         crawltask.tiger_task_id = tiger_task.id
         crawltask.save()

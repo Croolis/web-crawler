@@ -75,7 +75,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -92,6 +92,7 @@ STATIC_URL = '/static/'
 # ==========================================
 
 # For future usage. At this moment we will stick to default parameters
+SCHEDULER_TASKTIGER_TIMEOUT = 5 * 3600  # 5 hours
 SCHEDULER_TASKTIGER_QUEUE = 'crawltasks'
 SCHEDULER_REDIS_DB = 0
 SCHEDULER_REDIS_HOST = '127.0.0.1'

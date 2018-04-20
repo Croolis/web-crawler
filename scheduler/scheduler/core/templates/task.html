@@ -15,7 +15,8 @@
             <li class="breadcrumb-item active" aria-current="page">Task {{task.pk}}: {{task.name}}</li>
         </ol>
     </nav>
-    <table class="table table-hover">
+    <h2>Description</h2>
+    <table class="table">
         <tr>
             <td>Name</td>
             <td>{{task.name}}</td>
@@ -36,6 +37,28 @@
             <td>Finished</td>
             <td>{{task.finished_at}}</td>
         </tr>
+    </table>
+    <hr>
+    <h2>Crawl Tasks</h2>
+    <table class="table" style="width: 60%">
+        <thead class="thead-light">
+            <tr>
+                <th>Stage</th>
+                <th>Started</th>
+                <th>Elapsed Time</th>
+                <th>Status</th>
+                <th>Finished</th>
+            </tr>
+        </thead>
+        {% for crawltask in task.sorted_crawltasks %}
+        <tr>
+            <td>{{crawltask.stage}}</td>
+            <td>{{crawltask.created_at}}</td>
+            <td>{{crawltask.running}}</td>
+            <td>{{crawltask.status}}</td>
+            <td>{{crawltask.finished_at}}</td>
+        </tr>
+        {% endfor %}
     </table>
 
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>

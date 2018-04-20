@@ -14,15 +14,17 @@
             <tr>
                 <th>Name</th>
                 <th>Started</th>
+                <th>Elapsed Time</th>
                 <th>Status</th>
                 <th>Stage</th>
                 <th>Finished</th>
             </tr>
         </thead>
         {% for task in tasks %}
-        <tr>
-            <td><a href="/{{task.pk}}/">{{task.name}}</a></td>
+        <tr onclick="window.location='/{{task.pk}}';">
+            <td>{{task.name}}</td>
             <td>{{task.created_at}}</td>
+            <td>{{task.running}}</td>
             <td>{{task.status}}</td>
             <td>{{task.stage}}/{{task.stages_number}}</td>
             <td>{{task.finished_at}}</td>
