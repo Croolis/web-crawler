@@ -1,8 +1,12 @@
 import json
+import os
 import redis
 import tasktiger
 import time
 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'scheduler.settings')
+
+import django
 from django.conf import settings
 from django.utils import timezone
 
@@ -13,9 +17,12 @@ def do(duration):
     time.sleep(duration)
 
 
-def subtask(subtask):
+def subtask(subtask_id):
+    django.setup()
+    from scheduler.core.models import CrawlTask
+    subtask = CrawlTask.objects.get(pk=subtask_id)
     task = subtask.parent_task
-    config = json.loads(task.config)
+    config = json.loads(task.configuration)
     duration = config['tasks'][subtask.stage-1]
     subtask.status = TASK_STATUS.PROCESSING
     subtask.save(update_fields=['status'])
@@ -40,10 +47,15 @@ class DumbTaskProcessor:
         self.tiger = tasktiger.TaskTiger(connection=self.redis_conn)
 
     def run_subtask(self):
-        subtask = self.task.crawl_tasks.create(state=self.task.stage)
+        crawltask = self.task.crawl_tasks.create(stage=self.task.stage)
 
-        tiger_task = tasktiger.Task(self.tiger, subtask, [subtask], queue=settings.SCHEDULER_TASKTIGER_QUEUE)
-        subtask.tiger_task_id = tiger_task.id
-        subtask.save()
+        tiger_task = tasktiger.Task(
+            self.tiger,
+            subtask,
+            [crawltask.pk],
+            queue=settings.SCHEDULER_TASKTIGER_QUEUE
+        )
+        crawltask.tiger_task_id = tiger_task.id
+        crawltask.save()
 
         tiger_task.delay()

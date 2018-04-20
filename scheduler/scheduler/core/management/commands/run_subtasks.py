@@ -13,7 +13,7 @@ from scheduler.core.tasks.dumb import DumbTaskProcessor
 class Command(BaseCommand):
     def handle(self, *args, **options):
         # Marking tasks as DONE
-        (
+        updated = (
             Task.objects
             .filter(
                 status__in=(TASK_STATUS.WAITING, TASK_STATUS.PROCESSING),
@@ -21,6 +21,7 @@ class Command(BaseCommand):
             )
             .update(status=TASK_STATUS.DONE)
          )
+        print('{} tasks marked as DONE'.format(updated))
 
         unfinished_tasks = (
             Task.objects
@@ -30,9 +31,11 @@ class Command(BaseCommand):
         )
 
         # Marking waiting tasks as PROCESSING
-        unfinished_tasks.filter(stage=0).update(stage=1, status=TASK_STATUS.PROCESSING)
+        updated = unfinished_tasks.filter(stage=0).update(stage=1, status=TASK_STATUS.PROCESSING)
+        print('{} tasks marked as PROCESSING'.format(updated))
 
         for task in unfinished_tasks:
+            print('Running new crawltask for {} ({})'.format(task.pk, task.name))
             processor = DumbTaskProcessor(task)
             processor.run_subtask()
 
@@ -40,7 +43,8 @@ class Command(BaseCommand):
         conn = redis.Redis(decode_responses=True)
         tiger = tasktiger.TaskTiger(connection=conn)
         running_subtasks = CrawlTask.objects.filter(status=TASK_STATUS.PROCESSING)
-        for crawltask in running_subtasks:
+        unfinished_tasks = CrawlTask.objects.filter(status__in=(TASK_STATUS.WAITING, TASK_STATUS.PROCESSING))
+        for crawltask in unfinished_tasks:
             tiger_task = tasktiger.Task.from_id(
                 tiger,
                 queue=settings.SCHEDULER_TASKTIGER_QUEUE,
@@ -48,10 +52,41 @@ class Command(BaseCommand):
                 task_id=crawltask.tiger_task_id,
             )
             if tiger_task is not None:
+                print('crawltasktask {} ({}-{}) marked as ERROR (bad tigertask found)'.format(
+                    crawltask.pk, crawltask.parent_task.name, crawltask.stage)
+                )
                 crawltask.status = TASK_STATUS.ERROR
                 crawltask.save(update_fields=['status'])
 
-        # Propagating ERORR status from crawltasks to tasks
-        Task.objects.filter(crawl_tasks__status=TASK_STATUS.ERROR).update(status=TASK_STATUS.ERROR)
+        # Marking running crawltasks with dead tigertasks as ERROR
+        for crawltask in running_subtasks:
+            tiger_task = tasktiger.Task.from_id(
+                tiger,
+                queue=settings.SCHEDULER_TASKTIGER_QUEUE,
+                state=tasktiger.ACTIVE,
+                task_id=crawltask.tiger_task_id,
+            )
+            if tiger_task is None:
+                tiger_task = tasktiger.Task.from_id(
+                    tiger,
+                    queue=settings.SCHEDULER_TASKTIGER_QUEUE,
+                    state=tasktiger.QUEUED,
+                    task_id=crawltask.tiger_task_id,
+                )
+            if tiger_task is None:
+                print('crawltasktask {} ({}-{}) marked as ERROR (no tigertask found)'.format(
+                    crawltask.pk, crawltask.parent_task.name, crawltask.stage)
+                )
+                crawltask.status = TASK_STATUS.ERROR
+                crawltask.save(update_fields=['status'])
+
+        # Propagating ERROR status from crawltasks to tasks
+        updated = (
+            Task.objects
+            .exclude(status=TASK_STATUS.ERROR)
+            .filter(crawl_tasks__status=TASK_STATUS.ERROR)
+            .update(status=TASK_STATUS.ERROR)
+        )
+        print('{} tasks marked as ERROR'.format(updated))
 
 

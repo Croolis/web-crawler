@@ -26,7 +26,7 @@ class CrawlTask(models.Model):
     parent_task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='crawl_tasks')
     stage = models.IntegerField()
     status = models.CharField(max_length=16, choices=TASK_STATUS.choices(), default=TASK_STATUS.WAITING)
-    tiger_task_id = models.IntegerField(null=True)
+    tiger_task_id = models.CharField(null=True, max_length=64)
     created_at = models.DateTimeField(auto_now_add=True, blank=True)
     finished_at = models.DateTimeField(null=True, blank=True)
 
