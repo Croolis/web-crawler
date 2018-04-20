@@ -1,6 +1,7 @@
 from django.db import models
 
 from scheduler.core.constants import TASK_STATUS
+from scheduler.core.managers import TaskManager
 
 
 class Task(models.Model):
@@ -12,6 +13,8 @@ class Task(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, blank=True)
     finished_at = models.DateTimeField(null=True, blank=True)
 
+    objects = TaskManager()
+
     def __repr__(self):
         return '<Task: {}>'.format(self.name)
 
@@ -21,9 +24,11 @@ class Task(models.Model):
 
 class CrawlTask(models.Model):
     parent_task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='crawl_tasks')
+    stage = models.IntegerField()
+    status = models.CharField(max_length=16, choices=TASK_STATUS.choices(), default=TASK_STATUS.WAITING)
+    tiger_task_id = models.IntegerField(null=True)
     created_at = models.DateTimeField(auto_now_add=True, blank=True)
     finished_at = models.DateTimeField(null=True, blank=True)
-    status = models.CharField(max_length=16, choices=TASK_STATUS.choices())
 
     def __repr__(self):
         return '<CrawlTask: {}, pk={}>'.format(self.parent_task.name, self.pk)

@@ -66,18 +66,10 @@ DATABASES = {
 
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 
@@ -93,3 +85,15 @@ USE_TZ = True
 
 
 STATIC_URL = '/static/'
+
+
+# ==========================================
+# ===========  CUSTOM SETTINGS  ============
+# ==========================================
+
+# For future usage. At this moment we will stick to default parameters
+SCHEDULER_TASKTIGER_QUEUE = 'crawltasks'
+SCHEDULER_REDIS_DB = 0
+SCHEDULER_REDIS_HOST = '127.0.0.1'
+SCHEDULER_REDIS_PORT = 8001
+SCHEDULER_REDIS_PASSWORD = 'qwerty'
