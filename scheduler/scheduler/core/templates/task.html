@@ -9,24 +9,31 @@
     <link rel="stylesheet" href="{% static 'index.css' %}"/>
 </head>
 <body>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Index</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Task {{task.pk}}: {{task.name}}</li>
+        </ol>
+    </nav>
     <table class="table table-hover">
-        <thead class="thead-light">
-            <tr>
-                <th>Name</th>
-                <th>Started</th>
-                <th>Stage</th>
-                <th>Finished</th>
-            </tr>
-        </thead>
-        {% for task in tasks %}
         <tr>
-            <td><a href="/{{task.pk}}/">{{task.name}}</a></td>
+            <td>Name</td>
+            <td>{{task.name}}</td>
+        </tr>
+        <tr>
+            <td>Created</td>
             <td>{{task.created_at}}</td>
+        </tr>
+        <tr>
+            <td>State</td>
             <td>{{task.stage}}/{{task.stages_number}}</td>
+        </tr>
+        <tr>
+            <td>Finished</td>
             <td>{{task.finished_at}}</td>
         </tr>
-        {% endfor %}
     </table>
+
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>

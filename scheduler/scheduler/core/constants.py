@@ -1,4 +1,4 @@
-class CRAWL_STATUS:
+class TASK_STATUS:
     WAITING = 'waiting'
     PROCESSING = 'processing'
     DONE = 'done'
