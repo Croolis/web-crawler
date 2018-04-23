@@ -2,3 +2,7 @@ h1 {
     padding: 10px 20px;
     color: #222222;
 }
+
+a.btn {
+    margin: 10px;
+}

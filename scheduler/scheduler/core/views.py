@@ -4,7 +4,7 @@ from scheduler.core.models import Task
 
 
 class IndexView(generic.ListView):
-    template_name = 'index.html'
+    template_name = 'core/index.html'
     context_object_name = 'tasks'
 
     def get_queryset(self):
@@ -13,6 +13,12 @@ class IndexView(generic.ListView):
 
 
 class TaskView(generic.DetailView):
-    template_name = 'task.html'
+    template_name = 'core/task.html'
     context_object_name = 'task'
     model = Task
+
+
+class SubmitTaskView(generic.CreateView):
+    model = Task
+    fields = ['name', 'configuration', 'stages_number']
+    success_url = '/'
