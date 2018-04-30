@@ -9,7 +9,7 @@ SECRET_KEY = 'tdy(*nadi_b6hjv@zb*x8m1tl@1wz*%mz)#lxbhkhyz5@tb+0z'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['80.93.182.207']
 
 INSTALLED_APPS = [
     'scheduler.core.apps.CoreConfig',

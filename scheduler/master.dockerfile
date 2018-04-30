@@ -3,9 +3,9 @@ FROM ubuntu:16.04
 RUN mkdir /app
 WORKDIR /app
 
-
 RUN apt-get update \
     && apt-get install cron -y \
+    && apt-get install redis-server -y \
     && apt-get install python-pip -y \
     && apt-get install python3-pip -y \
     && apt-get install python3-dev -y
@@ -26,7 +26,7 @@ COPY etc/ /etc/
 RUN mkdir -p /var/run/scheduler/ \
     && chown -R www-data: /var/run/scheduler/
 
-EXPOSE 80
+EXPOSE 80 6379
 
 RUN scheduler migrate
 
