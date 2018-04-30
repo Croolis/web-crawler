@@ -1,3 +1,4 @@
 Django==2.0.4
 redis==2.10.6
 tasktiger==0.9.3
+psycopg2==2.7.1

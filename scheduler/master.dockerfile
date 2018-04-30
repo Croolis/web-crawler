@@ -28,6 +28,4 @@ RUN mkdir -p /var/run/scheduler/ \
 
 EXPOSE 80 6379
 
-RUN scheduler migrate
-
 ENTRYPOINT ["supervisord"]

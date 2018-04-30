@@ -21,6 +21,9 @@ RUN pip3 install -e .
 
 COPY etc/ /etc/
 
+RUN mkdir -p /var/run/scheduler/ \
+    && chown -R www-data: /var/run/scheduler/
+
 RUN rm /etc/supervisord.conf.d/scheduler.conf \
     && rm /etc/supervisord.conf.d/redis.conf
 

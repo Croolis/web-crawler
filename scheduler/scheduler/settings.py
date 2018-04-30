@@ -59,8 +59,12 @@ WSGI_APPLICATION = 'scheduler.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'scheduler_db',
+        'USER': 'scheduler',
+        'PASSWORD': 'postgresPassword',  # TODO: WTF? Totally not production-like...
+        'HOST': '80.93.182.207',
+        'PORT': '5432',
     }
 }
 
