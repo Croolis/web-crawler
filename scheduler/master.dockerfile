@@ -26,6 +26,8 @@ COPY etc/ /etc/
 RUN mkdir -p /var/run/scheduler/ \
     && chown -R www-data: /var/run/scheduler/
 
+RUN rm /etc/supervisord.conf.d/tasktiger.conf
+
 EXPOSE 80 6379
 
 ENTRYPOINT ["supervisord"]

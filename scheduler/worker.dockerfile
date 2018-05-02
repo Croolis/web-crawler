@@ -19,12 +19,10 @@ COPY setup.py ./
 COPY scheduler/ ./scheduler/
 RUN pip3 install -e .
 
-COPY etc/ /etc/
+COPY /etc/worker.sh /usr/bin/runtiger
+RUN chmod +x /usr/bin/runtiger
 
 RUN mkdir -p /var/run/scheduler/ \
     && chown -R www-data: /var/run/scheduler/
 
-RUN rm /etc/supervisord.conf.d/scheduler.conf \
-    && rm /etc/supervisord.conf.d/redis.conf
-
-ENTRYPOINT ["supervisord"]
+ENTRYPOINT ["runtiger"]
