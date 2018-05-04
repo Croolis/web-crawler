@@ -12,3 +12,17 @@ class TASK_STATUS:
             (cls.DONE, 'Done'),
             (cls.ERROR, 'Error'),
         ]
+
+
+class SUBTASK_TYPE:
+    ACTION = 'action'
+    CRAWl = 'crawl'
+    ANALYSIS = 'analysis'
+
+    @classmethod
+    def choices(cls):
+        return [
+            (cls.ACTION, 'Action'),
+            (cls.CRAWl, 'Crawl'),
+            (cls.ANALYSIS, 'Analysis'),
+        ]

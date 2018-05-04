@@ -22,20 +22,24 @@
             <td>{{task.name}}</td>
         </tr>
         <tr>
-            <td>Created</td>
-            <td>{{task.created_at}}</td>
-        </tr>
-        <tr>
             <td>Status</td>
             <td>{{task.status}}</td>
+        </tr>
+        <tr>
+            <td>Stage</td>
+            <td>{{task.stage}}</td>
+        </tr>
+        <tr>
+            <td>Info</td>
+            <td>{{task.info}}</td>
         </tr>
         <tr>
             <td>Configuration</td>
             <td>{{task.configuration}}</td>
         </tr>
         <tr>
-            <td>Stage</td>
-            <td>{{task.stage}}/{{task.stages_number}}</td>
+            <td>Created</td>
+            <td>{{task.created_at}}</td>
         </tr>
         <tr>
             <td>Finished</td>
@@ -43,25 +47,32 @@
         </tr>
     </table>
     <hr>
-    <h2>Crawl Tasks</h2>
-    <table class="table" style="width: 60%">
+    <h2>Subtasks</h2>
+    <table class="table" style="width: 70%">
         <thead class="thead-light">
             <tr>
-                <th>Stage</th>
+                <th>Type</th>
+                <th>As User</th>
                 <th>Started</th>
                 <th>Elapsed Time</th>
                 <th>Status</th>
                 <th>Finished</th>
             </tr>
         </thead>
-        {% for crawltask in task.sorted_crawltasks %}
-        <tr>
-            <td>{{crawltask.stage}}</td>
-            <td>{{crawltask.created_at}}</td>
-            <td>{{crawltask.running}}</td>
-            <td>{{crawltask.status}}</td>
-            <td>{{crawltask.finished_at}}</td>
-        </tr>
+        {% for crawltask_group in task.sorted_subtasks %}
+            <tr>
+                <td colspan="5" style="text-align: center">Stage {{ forloop.counter }}</td>
+            </tr>
+            {% for crawltask in crawltask_group %}
+                <tr>
+                    <td>{{crawltask.type}}</td>
+                    <td>{{crawltask.task_user}}</td>
+                    <td>{{crawltask.created_at}}</td>
+                    <td>{{crawltask.running}}</td>
+                    <td>{{crawltask.status}}</td>
+                    <td>{{crawltask.finished_at}}</td>
+                </tr>
+            {% endfor %}
         {% endfor %}
     </table>
 

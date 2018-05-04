@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from scheduler.core.models import Task, CrawlTask
+from scheduler.core.models import Task, Subtask
 
 
 admin.site.register(Task)
-admin.site.register(CrawlTask)
+admin.site.register(Subtask)
