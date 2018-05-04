@@ -80,7 +80,7 @@ def build_stage(action, stage, config, task):
         Subtask.objects.create(
             parent_task=task,
             stage=stage,
-            type=SUBTASK_TYPE.CRAWl,
+            type=SUBTASK_TYPE.CRAWL,
             configuration=json.dumps(user_config),
         )
 
@@ -101,7 +101,7 @@ def parse_config(name, config):
     stages_number = len(action_chain) + 1
     task = Task.objects.create(
         name=name,
-        configuration=config,
+        configuration=json.dumps(config),
         stages_number=stages_number,
         info=info,
     )

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Tasks</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <link rel="stylesheet" href="{% static 'index.css' %}"/>
+    <link rel="stylesheet" href="{% static 'task.css' %}"/>
 </head>
 <body>
     <nav aria-label="breadcrumb">
@@ -48,11 +48,11 @@
     </table>
     <hr>
     <h2>Subtasks</h2>
-    <table class="table" style="width: 70%">
+    <table class="table centered" style="width: 70%">
         <thead class="thead-light">
             <tr>
                 <th>Type</th>
-                <th>As User</th>
+                <th>Action/User</th>
                 <th>Started</th>
                 <th>Elapsed Time</th>
                 <th>Status</th>
@@ -61,7 +61,7 @@
         </thead>
         {% for crawltask_group in task.sorted_subtasks %}
             <tr>
-                <td colspan="5" style="text-align: center">Stage {{ forloop.counter }}</td>
+                <td colspan="6" class="subtask-divider"><strong>Stage {{ forloop.counter }}</strong></td>
             </tr>
             {% for crawltask in crawltask_group %}
                 <tr>

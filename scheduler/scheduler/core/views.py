@@ -23,7 +23,7 @@ class TaskView(generic.DetailView):
 class SubmitTaskView(generic.CreateView):
     model = Task
     fields = ['name', 'configuration']
-    success_url = '/{pk}/'
+    success_url = '/{id}/'
 
     def post(self, request, *args, **kwargs):
         form = self.get_form()

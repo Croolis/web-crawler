@@ -16,13 +16,13 @@ class TASK_STATUS:
 
 class SUBTASK_TYPE:
     ACTION = 'action'
-    CRAWl = 'crawl'
+    CRAWL = 'crawl'
     ANALYSIS = 'analysis'
 
     @classmethod
     def choices(cls):
         return [
             (cls.ACTION, 'Action'),
-            (cls.CRAWl, 'Crawl'),
+            (cls.CRAWL, 'Crawl'),
             (cls.ANALYSIS, 'Analysis'),
         ]

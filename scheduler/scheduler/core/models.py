@@ -65,9 +65,12 @@ class Subtask(models.Model):
 
     @property
     def task_user(self):
-        if self.type != SUBTASK_TYPE.CRAWl:
+        if self.type == SUBTASK_TYPE.ACTION:
+            return json.loads(self.configuration).get('action')
+        elif self.type == SUBTASK_TYPE.CRAWL:
+            return json.loads(self.configuration).get('user')
+        else:
             return ''
-        return json.loads(self.configuration).get('user')
 
     def __repr__(self):
         return '<Subtask: {}, pk={}>'.format(self.parent_task.name, self.pk)
