@@ -80,3 +80,46 @@ class Subtask(models.Model):
 
     def __str__(self):
         return '"{}"-{}'.format(self.parent_task.name, self.pk)
+
+
+class CrawlLink(models.Model):
+    url = models.URLField()
+    task = models.ForeignKey(Task, related_name='crawl_links', on_delete=models.CASCADE)
+    stage = models.IntegerField()
+    user = models.CharField(max_length=32)
+
+    def __str__(self):
+        return '<Link: task="{}"-{}, user={}, url={}>'.format(
+            self.task.name,
+            self.stage,
+            self.user,
+            self.url,
+        )
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['task', 'stage', 'user']),
+        ]
+
+
+class SecurityBreach(models.Model):
+    url = models.URLField()
+    task = models.ForeignKey(Task, related_name='security_breaches', on_delete=models.CASCADE)
+    stage = models.IntegerField()
+    owner = models.CharField(max_length=32)
+    intruder = models.CharField(max_length=32)
+
+    def __str__(self):
+        return '<Breach: task="{}"-{}, owner={}, intruder={}, url={}>'.format(
+            self.task.name,
+            self.stage,
+            self.owner,
+            self.intruder,
+            self.url,
+        )
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['task', 'stage']),
+        ]
+        ordering = ['stage', 'owner', 'intruder']
