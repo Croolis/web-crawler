@@ -1,4 +1,5 @@
 from collections import defaultdict
+import copy
 from itertools import chain
 import json
 
@@ -94,7 +95,7 @@ def build_stage(action, stage, config, task):
 
 
 def parse_config(name, config):
-    action_chain, unvisited_actions = build_action_chain(config['actions'].copy())
+    action_chain, unvisited_actions = build_action_chain(copy.deepcopy(config['actions']))
     if unvisited_actions:
         info = 'These actions will not be executed: %s' % ','.join(unvisited_actions)
     else:
