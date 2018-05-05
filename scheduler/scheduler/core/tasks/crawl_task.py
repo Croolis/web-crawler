@@ -3,7 +3,6 @@ import json
 import os
 import redis
 import tasktiger
-import time
 
 # --------  Django imports  -------------
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'scheduler.settings')
@@ -18,6 +17,46 @@ from scheduler.core.tasks import runners
 # ========================================
 
 
+def action_handler(subtask, task_config, subtask_config):
+    runners.act(task_config, subtask_config)
+
+
+def crawl_handler(subtask, task_config, subtask_config):
+    links = runners.crawl(task_config, subtask_config)
+
+    task = subtask.parent_task
+    stage = subtask.stage
+    user = subtask_config['user']
+    for link in links:
+        task.crawl_links.create(user=user, stage=stage, url=link)
+
+
+def analysis_handler(subtask, task_config, subtask_config):
+    task = subtask.parent_task
+    stage = subtask.stage
+    users = task_config['users'].keys()
+    links = {}
+    for user in users:
+        links[user] = task.crawl_links.filter(stage=stage, user=user).values_list('url', flat=True)
+
+    breaches = runners.analyse(task_config, subtask_config, links)
+
+    for link, owner, intruder in breaches:
+        task.security_breaches.create(
+            stage=stage,
+            url=link,
+            owner=owner,
+            intruder=intruder,
+        )
+
+
+SUBTASK_HANDLERS = {
+    SUBTASK_TYPE.ACTION: action_handler,
+    SUBTASK_TYPE.CRAWL: crawl_handler,
+    SUBTASK_TYPE.ANALYSIS: analysis_handler,
+}
+
+
 def subtask_handler(subtask_id):
     django.setup()
     from scheduler.core.models import Subtask
@@ -25,14 +64,14 @@ def subtask_handler(subtask_id):
 
     task_config = json.loads(subtask.parent_task.configuration)
     subtask_config = json.loads(subtask.configuration)
-    runner = runners.RUNNERS[subtask.type]
+    handler = SUBTASK_HANDLERS[subtask.type]
 
     subtask.status = TASK_STATUS.PROCESSING
     subtask.started_at = timezone.now()
     subtask.save(update_fields=('status', 'started_at'))
 
     try:
-        runner(task_config, subtask_config)
+        handler(subtask, task_config, subtask_config)
     except Exception:
         subtask.status = TASK_STATUS.ERROR
     else:
