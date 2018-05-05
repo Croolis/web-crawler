@@ -31,7 +31,7 @@
         </tr>
         <tr>
             <td>Info</td>
-            <td>{{task.info}}</td>
+            <td>{{task.info|default_if_none:"–"}}</td>
         </tr>
         <tr>
             <td>Configuration</td>
@@ -43,7 +43,7 @@
         </tr>
         <tr>
             <td>Finished</td>
-            <td>{{task.finished_at}}</td>
+            <td>{{task.finished_at|default_if_none:"–"}}</td>
         </tr>
     </table>
     <hr>
@@ -53,9 +53,9 @@
             <tr>
                 <th>Type</th>
                 <th>Action/User</th>
-                <th>Started</th>
-                <th>Elapsed Time</th>
                 <th>Status</th>
+                <th>Elapsed Time</th>
+                <th>Started</th>
                 <th>Finished</th>
             </tr>
         </thead>
@@ -67,10 +67,10 @@
                 <tr>
                     <td>{{crawltask.type}}</td>
                     <td>{{crawltask.task_user}}</td>
-                    <td>{{crawltask.created_at}}</td>
-                    <td>{{crawltask.running}}</td>
                     <td>{{crawltask.status}}</td>
-                    <td>{{crawltask.finished_at}}</td>
+                    <td>{{crawltask.running}}</td>
+                    <td>{{crawltask.started_at|default_if_none:"–"}}</td>
+                    <td>{{crawltask.finished_at|default_if_none:"–"}}</td>
                 </tr>
             {% endfor %}
         {% endfor %}

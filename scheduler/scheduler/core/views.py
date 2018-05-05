@@ -3,7 +3,7 @@ from django.views import generic
 import json
 
 from scheduler.core.models import Task
-from scheduler.core.taskutils.parse_config import parse_config
+from scheduler.core.tasks.parse_config import parse_config
 
 
 class IndexView(generic.ListView):

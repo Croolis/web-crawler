@@ -84,10 +84,12 @@ def build_stage(action, stage, config, task):
             configuration=json.dumps(user_config),
         )
 
+    analysis_config = {}
     Subtask.objects.create(
         parent_task=task,
         stage=stage,
         type=SUBTASK_TYPE.ANALYSIS,
+        configuration=json.dumps(analysis_config)
     )
 
 

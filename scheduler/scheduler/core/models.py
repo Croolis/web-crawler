@@ -6,9 +6,12 @@ from scheduler.core.constants import TASK_STATUS, SUBTASK_TYPE
 from scheduler.core.managers import TaskManager
 
 
-def elapsed_time(object):
-    finish_time = object.finished_at if object.finished_at else timezone.now()
-    seconds = (finish_time - object.created_at).total_seconds()
+def elapsed_time(obj, start_time_attr):
+    start_time = getattr(obj, start_time_attr)
+    if not start_time:
+        return '–'
+    finish_time = obj.finished_at if obj.finished_at else timezone.now()
+    seconds = (finish_time - start_time).total_seconds()
     mins, secs = divmod(int(seconds), 60)
     hours, mins = divmod(mins, 60)
     values = [
@@ -40,7 +43,7 @@ class Task(models.Model):
 
     @property
     def running(self):
-        return elapsed_time(self)
+        return elapsed_time(self, 'created_at')
 
     def __repr__(self):
         return '<Task: {}>'.format(self.name)
@@ -56,12 +59,12 @@ class Subtask(models.Model):
     configuration = models.TextField(null=True)
     status = models.CharField(max_length=16, choices=TASK_STATUS.choices(), default=TASK_STATUS.WAITING)
     tiger_task_id = models.CharField(null=True, max_length=64)
-    created_at = models.DateTimeField(auto_now_add=True, blank=True)
+    started_at = models.DateTimeField(null=True, blank=True)
     finished_at = models.DateTimeField(null=True, blank=True)
 
     @property
     def running(self):
-        return elapsed_time(self)
+        return elapsed_time(self, 'started_at')
 
     @property
     def task_user(self):

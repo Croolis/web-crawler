@@ -98,7 +98,3 @@ STATIC_URL = '/static/'
 # For future usage. At this moment we will stick to default parameters
 SCHEDULER_TASKTIGER_TIMEOUT = 5 * 3600  # 5 hours
 SCHEDULER_TASKTIGER_QUEUE = 'crawltasks'
-SCHEDULER_REDIS_DB = 0
-SCHEDULER_REDIS_HOST = '127.0.0.1'
-SCHEDULER_REDIS_PORT = 8001
-SCHEDULER_REDIS_PASSWORD = 'qwerty'
