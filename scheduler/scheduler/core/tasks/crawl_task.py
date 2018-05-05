@@ -73,7 +73,7 @@ class TaskProcessor:
         return False
 
     def check_crawl(self, task):
-        subtasks = task.subtasks.filter(stage=task.stage, type=SUBTASK_TYPE.CRAWL)
+        subtasks = task.subtasks.filter(stage=task.stage, type=SUBTASK_TYPE.CRAWL).order_by('pk')
 
         if subtasks.count() == subtasks.filter(status=TASK_STATUS.DONE).count():
             return True
