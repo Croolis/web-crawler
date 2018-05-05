@@ -1,0 +1,1 @@
+*/1 * * * *    root    flock -n /tmp/scheduler_run_subtasks.lock -c "/usr/local/bin/scheduler run_subtasks"

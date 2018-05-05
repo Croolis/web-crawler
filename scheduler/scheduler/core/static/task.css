@@ -1,0 +1,7 @@
+table.centered th, table.centered td {
+    text-align: center;
+}
+
+.subtask-divider {
+    background-color: #FAFAFC;
+}

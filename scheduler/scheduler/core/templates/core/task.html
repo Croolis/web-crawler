@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Tasks</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'task.css' %}"/>
+</head>
+<body>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Index</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Task {{task.pk}}: {{task.name}}</li>
+        </ol>
+    </nav>
+    <h2>Description</h2>
+    <table class="table">
+        <tr>
+            <td>Name</td>
+            <td>{{task.name}}</td>
+        </tr>
+        <tr>
+            <td>Status</td>
+            <td>{{task.status}}</td>
+        </tr>
+        <tr>
+            <td>Stage</td>
+            <td>{{task.stage}}</td>
+        </tr>
+        <tr>
+            <td>Info</td>
+            <td>{{task.info|default_if_none:"–"}}</td>
+        </tr>
+        <tr>
+            <td>Configuration</td>
+            <td>{{task.configuration}}</td>
+        </tr>
+        <tr>
+            <td>Created</td>
+            <td>{{task.created_at}}</td>
+        </tr>
+        <tr>
+            <td>Finished</td>
+            <td>{{task.finished_at|default_if_none:"–"}}</td>
+        </tr>
+    </table>
+    <hr>
+    <h2>Subtasks</h2>
+    <table class="table centered" style="width: 70%">
+        <thead class="thead-light">
+            <tr>
+                <th>Type</th>
+                <th>Action/User</th>
+                <th>Status</th>
+                <th>Elapsed Time</th>
+                <th>Started</th>
+                <th>Finished</th>
+            </tr>
+        </thead>
+        {% for crawltask_group in task.sorted_subtasks %}
+            <tr>
+                <td colspan="6" class="subtask-divider"><strong>Stage {{ forloop.counter }}</strong></td>
+            </tr>
+            {% for crawltask in crawltask_group %}
+                <tr>
+                    <td>{{crawltask.type}}</td>
+                    <td>{{crawltask.task_user}}</td>
+                    <td>{{crawltask.status}}</td>
+                    <td>{{crawltask.running}}</td>
+                    <td>{{crawltask.started_at|default_if_none:"–"}}</td>
+                    <td>{{crawltask.finished_at|default_if_none:"–"}}</td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
+    </table>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+</html>
