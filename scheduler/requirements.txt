@@ -2,3 +2,5 @@ Django==2.0.4
 redis==2.10.6
 tasktiger==0.9.3
 psycopg2==2.7.1
+selenium==3.11.0
+tldextract==2.2.0
