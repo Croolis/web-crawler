@@ -1,5 +1,10 @@
 import time
 
+from scheduler.scheduler.core.crawler.crawler import build_site_map, check_for_escalation, login, logout
+from selenium import webdriver
+
+firefox_driver = webdriver.Firefox()
+
 
 def act(task_config, subtask_config):
     time.sleep(1)
@@ -7,13 +12,14 @@ def act(task_config, subtask_config):
 
 
 def crawl(task_config, subtask_config):
-    time.sleep(30)
-    # returns [url1, url2, url3...]
-    return ['https://www.google.ru/short_path', 'https://www.google.ru/quite_a_long_path']  # mocked
+    user = subtask_config['user']
+    login(firefox_driver, task_config, user)
+    entry_point = task_config['start_page']
+    site_map = build_site_map(firefox_driver, entry_point)
+    logout(firefox_driver)
+    return site_map
 
 
-def analyse(task_config, subtask_config, links):
-    # links: {username: [link1, link2, link3...] for username in users}
-    time.sleep(5)
-    # returns [(link1, owner1, intruder1), (link2, owner2, intruder2), ...]
-    return [('https://www.google.ru/quite_a_long_path', 'normal_user', 'moderator_1')]  # mocked
+def analyse(task_config, subtask_config, site_maps):
+    escalations = check_for_escalation(firefox_driver, task_config, site_maps)
+    return escalations
