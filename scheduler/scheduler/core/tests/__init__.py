@@ -1,0 +1,1 @@
+from scheduler.core.tests import *
