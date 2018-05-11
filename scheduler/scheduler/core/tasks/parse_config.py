@@ -15,50 +15,42 @@ def first_group(iterable, key=lambda x: x):
     return [x for x in sorted_elems if key(x) == key(sorted_elems[0])]
 
 
+def execute_action(action_name: str, all_actions: dict, executed_actions: set):
+    if action_name in executed_actions:
+        return [], []
+    action = all_actions[action_name]
+    executed_chain = []
+
+    # Satisfy all dependencies
+    for dependency in action.get('depends') or []:
+        if dependency in executed_actions:
+            continue
+        temp_chain, _ = execute_action(dependency, all_actions, executed_actions)
+        executed_chain += temp_chain
+
+    # Check if all dependencies are satisfied
+    # This check is needed in case one dependency blocks another
+    for dependency in action.get('depends') or []:
+        if dependency not in executed_actions:
+            return [], [action_name]
+
+    # Now that all dependencies are satisfied it's allowed to execute action
+    executed_chain.append(action_name)
+    executed_actions.add(action_name)
+    executed_actions -= set(action.get('blocks') or [])
+
+    return executed_chain, []
+
+
 def build_action_chain(actions):
-    allowed = {action for action in actions if not actions[action].get('depends')}
-    blocked = set()
+    unvisited_actions = []
     action_chain = []
-
-    blocks = defaultdict(list)
-    dependants = defaultdict(list)
-    allowers = defaultdict(list)
-
-    for action, content in actions.items():
-        blocks[action] = content.get('blocks', [])
-
-        depends = content.get('depends', [])
-        allowers[action] = depends
-        for elem in depends:
-            dependants[elem].append(action)
-
-    while allowed:
-        # Determining new action
-        candidates = first_group(allowed, key=lambda x: len(blocks[x]))  # with fewest blocked actions
-        action = sorted(candidates, key=lambda x: len(dependants[x]))[-1]  # with most dependent actions
-
-        # Deleting new action from records
-        action_chain.append(action)
-        allowed.remove(action)
-        blocked.add(action)
-        for elem in chain(blocks.values(), dependants.values()):
-            if action in elem:
-                elem.remove(action)
-        # Blocking other actions
-        for elem in blocks[action]:
-            blocked.add(elem)
-            for newelem in chain(blocks.values(), dependants.values()):
-                if elem in newelem:
-                    newelem.remove(elem)
-        # Unblocking newly-available actions
-        for key, value in allowers.items():
-            if action in value:
-                value.remove(action)
-            if not value and key not in blocked:
-                allowed.add(key)
-
-    unvisited_actions = set(actions) - set(action_chain)
-    return action_chain, sorted(unvisited_actions)
+    executed_actions = set()
+    for action in actions:
+        executed_action_chain, failed_actions = execute_action(action, actions, executed_actions)
+        action_chain += executed_action_chain
+        unvisited_actions += failed_actions
+    return action_chain, unvisited_actions
 
 
 def build_stage(action, stage, config, task):

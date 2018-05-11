@@ -22,6 +22,30 @@ class BuildActionChainTestCase(TestCase):
         action_chain, unvisited_actions = parse_config.build_action_chain(actions)
         self.assertEqual(len(unvisited_actions), 0)
 
+    def test_action_cancelation(self):
+        actions = {
+            "1": {},
+            "2": {
+                "depends": [
+                    "1"
+                ],
+                "blocks": [
+                    "1"
+                ]
+            },
+            "3": {
+                "depends": [
+                    "1"
+                ],
+                "blocks": [
+                    "1"
+                ]
+            }
+        }
+        action_chain, unvisited_actions = parse_config.build_action_chain(actions)
+        self.assertTrue(action_chain.count("1") > 1)
+        self.assertEqual(len(unvisited_actions), 0)
+
     def test_action_blocking(self):
         actions = {
           "2": {},
