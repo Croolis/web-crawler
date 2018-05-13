@@ -4,3 +4,4 @@ tasktiger==0.9.3
 psycopg2==2.7.1
 selenium==3.8.0
 tldextract==2.2.0
+bs4
