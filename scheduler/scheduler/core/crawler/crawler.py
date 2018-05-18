@@ -1,11 +1,17 @@
 from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.common.keys import Keys
 
 from urllib.parse import urlparse, ParseResult
 from tldextract import extract
+from bs4 import Tag, BeautifulSoup as bs
+
+from scheduler.core.crawler.action import Action
+from scheduler.core.crawler.link import Link
+from scheduler.core.crawler.form import Form
+
+from time import sleep
 
 from typing import Set, List, Dict
-
-from bs4 import Tag, BeautifulSoup as bs
 
 
 def extract_text(root: bs):
@@ -37,13 +43,13 @@ def page_likelihood(url: ParseResult, page_content: str, another_url: ParseResul
     another_page_tags = set()
     for tag in another_page_content.findAll():
         another_page_tags.add((str(tag.name), frozenset({k: tuple(tag.attrs[k]) for k in tag.attrs})))
-    return len(page_tags & another_page_tags) / len(page_tags | another_page_tags)
+    return len(page_tags & another_page_tags) / min(len(page_tags), len(another_page_tags))
 
 
-def is_new_page(crawled_pages: Dict[str, str], page_url: str, page_content: str):
+def is_new_page(crawled_pages: Dict[Action, str], page_url: str, page_content: str):
     page_url = urlparse(page_url)
-    for crawled_url in crawled_pages:
-        if page_likelihood(page_url, page_content, urlparse(crawled_url), crawled_pages[crawled_url]) > 0.95:
+    for action in crawled_pages:
+        if page_likelihood(page_url, page_content, urlparse(action.url), crawled_pages[action]) > 0.95:
             return False
     return True
 
@@ -54,6 +60,8 @@ def check_url(url: str, domain_url: str) -> bool:
     url_domain = extract(url)
     expected_domain = extract(domain_url)
     if url_domain.domain != expected_domain.domain or url_domain.suffix != expected_domain.suffix:
+        return False
+    if url_domain.subdomain != expected_domain.subdomain:
         return False
     parsed_url = urlparse(url)
     if parsed_url.scheme == 'javascript':
@@ -71,27 +79,62 @@ def logout(driver: WebDriver):
     driver.delete_all_cookies()
 
 
-def get_actions(driver: WebDriver, url: str) -> List[str]:
-    links = driver.find_elements_by_tag_name("a")
-    return [link.get_attribute('href') for link in links if check_url(link.get_attribute('href'), driver.current_url)]
+def get_actions(driver: WebDriver) -> Set[Action]:
+    sleep(1)
+    links = driver.find_elements_by_tag_name('a')
+    actions = set([Link(link.get_attribute('href')) for link in links
+                   if check_url(link.get_attribute('href'), driver.current_url)])  # type: Set[Action]
+
+    forms = driver.find_elements_by_tag_name('form')
+    current_page = driver.current_url
+    for form in forms:
+        method = str(form.get_attribute('method')) or 'get'  # type: str
+        action = form.get_attribute('action') or 'get'
+        status = 'p' if method == 'get' else 'c'  # type: str
+        actions.add(Form(status, current_page, action, form.get_attribute('class') or ''))
+    return actions
 
 
-def crawl_page(driver: WebDriver, url: str, available_links: Set[str]) -> Set[str]:
-    driver.get(url)
-    available_links.add(url)
-    actions = get_actions(driver, url)
+def perform_action(driver: WebDriver, action: Action):
+    if driver.current_url != action.page:
+        driver.get(action.page)
+    if isinstance(action, Link):
+        pass
+    if isinstance(action, Form):
+        submits = driver.find_elements_by_xpath('//form[@class="{}"]//input[@type="submit"]'.format(action.html_class)) +\
+                  driver.find_elements_by_xpath('//form[@class="{}"]//button[@type="submit"]'.format(action.html_class)) +\
+                  driver.find_elements_by_xpath('//form[@class="{}"]//input[@type="button"]'.format(action.html_class))
+
+        inputs = list(filter(lambda x: x not in submits and x.get_attribute('type') != 'hidden',
+                             driver.find_elements_by_xpath('//form[@class="{}"]//input'.format(action.html_class))))
+        for visible_input in inputs:
+            if visible_input.get_attribute('type') == 'checkbox':
+                visible_input.click()
+            else:
+                visible_input.send_keys('biba')
+        if len(submits) > 0:
+            submits[0].click()
+        else:
+            driver.find_elements_by_xpath('//form[@class="{}"]')[0].send_keys(Keys.ENTER)
+
+
+def crawl_page(driver: WebDriver, action: Action, performed_actions: Dict[Action, str]):
+    perform_action(driver, action)
+    if not is_new_page(performed_actions, driver.current_url, driver.page_source):
+        return
+    performed_actions[action] = driver.page_source
+    action.url = driver.current_url
+
+    # collect actions on this page
+    actions = get_actions(driver)
     for action in actions:
-        if action in available_links:
-            continue
-        crawl_page(driver, action, available_links)
-
-    return available_links
+        if action.status == 'p' and action not in performed_actions:
+            crawl_page(driver, action, performed_actions)
 
 
-def build_site_map(driver: WebDriver, entry_point: str):
-    site_map = set()
-    crawl_page(driver, entry_point, site_map)
-
+def build_site_map(driver: WebDriver, entry_point: str) -> Dict[Action, str]:
+    site_map = dict()  # type: Dict[Action, str]
+    crawl_page(driver, Link(entry_point), site_map)
     return site_map
 
 
