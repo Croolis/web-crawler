@@ -65,7 +65,13 @@
             </tr>
             {% for crawltask in crawltask_group %}
                 <tr>
-                    <td>{{crawltask.type}}</td>
+                    <td>
+                        {% if crawltask.type == 'user_input' %}
+                            <a style='color:red' href="/userform/{{crawltask.pk}}">{{crawltask.type}}</a>
+                        {% else %}
+                            {{crawltask.type}}
+                        {% endif %}
+                    </td>
                     <td>{{crawltask.task_user}}</td>
                     <td>{{crawltask.status}}</td>
                     <td>{{crawltask.running}}</td>

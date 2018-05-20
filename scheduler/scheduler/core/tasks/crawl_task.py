@@ -98,6 +98,13 @@ class TaskProcessor:
         subtask.save(update_fields=('tiger_task_id',))
         tiger_task.delay()
 
+    def check_user_input(self, task):
+        try:
+            subtask = task.subtasks.get(stage=task.stage, type=SUBTASK_TYPE.USER_INPUT)
+        except models.ObjectDoesNotExist:
+            return True  # There can be no subtask of this type
+        return subtask.status == TASK_STATUS.DONE
+
     def check_action(self, task):
         try:
             subtask = task.subtasks.get(stage=task.stage, type=SUBTASK_TYPE.ACTION)
@@ -148,6 +155,7 @@ class TaskProcessor:
         # Marking as done
         if task.stage > task.stages_number:
             task.status = TASK_STATUS.DONE
+            task.finished_at = timezone.now()
             task.save()
 
         # Checking for errors
@@ -157,6 +165,8 @@ class TaskProcessor:
             task.status.save()
 
         # Running subtasks at current stage
+        if not self.check_user_input(task):
+            return
         if not self.check_action(task):
             return
         if not self.check_crawl(task):

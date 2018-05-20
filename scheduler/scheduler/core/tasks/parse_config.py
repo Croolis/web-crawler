@@ -55,6 +55,18 @@ def build_action_chain(actions):
 
 def build_stage(action, stage, config, task):
     if action is not None:
+        action_form_fields = config['actions'][action].get('form_fields', [])
+        if action_form_fields:
+            userform_config = {
+                'form_fields': action_form_fields,
+            }
+            Subtask.objects.create(
+                parent_task=task,
+                stage=stage,
+                type=SUBTASK_TYPE.USER_INPUT,
+                configuration=json.dumps(userform_config),
+            )
+
         action_config = {
             'action': action,
         }

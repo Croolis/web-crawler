@@ -1,6 +1,6 @@
 import time
 
-from scheduler.scheduler.core.crawler.crawler import build_site_map, check_for_escalation, login, logout
+from scheduler.core.crawler.crawler import build_site_map, check_for_escalation, login, logout
 from selenium import webdriver
 
 firefox_driver = webdriver.Firefox()

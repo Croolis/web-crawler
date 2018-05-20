@@ -16,11 +16,12 @@ Including another URLconf
 from django.urls import path
 from django.contrib import admin
 
-from scheduler.core.views import IndexView, TaskView, SubmitTaskView
+from scheduler.core.views import IndexView, TaskView, SubmitTaskView, UserFormView
 
 urlpatterns = [
     path(r'admin/', admin.site.urls),
     path(r'', IndexView.as_view(), name='index'),
     path(r'<int:pk>/', TaskView.as_view(), name='task'),
     path(r'submit/', SubmitTaskView.as_view(), name='createtask'),
+    path(r'userform/<int:subtask_id>/', UserFormView.as_view(), name='userform')
 ]

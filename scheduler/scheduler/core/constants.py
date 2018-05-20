@@ -18,6 +18,7 @@ class SUBTASK_TYPE:
     ACTION = 'action'
     CRAWL = 'crawl'
     ANALYSIS = 'analysis'
+    USER_INPUT = 'user_input'
 
     @classmethod
     def choices(cls):
@@ -25,4 +26,5 @@ class SUBTASK_TYPE:
             (cls.ACTION, 'Action'),
             (cls.CRAWL, 'Crawl'),
             (cls.ANALYSIS, 'Analysis'),
+            (cls.USER_INPUT, 'User Input')
         ]
