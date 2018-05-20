@@ -6,7 +6,14 @@ WORKDIR /app
 RUN apt-get update \
     && apt-get install python-pip -y \
     && apt-get install python3-pip -y \
-    && apt-get install python3-dev -y
+    && apt-get install python3-dev -y \
+    && apt-get install wget -y
+
+RUN wget -q https://github.com/mozilla/geckodriver/releases/download/v0.20.1/geckodriver-v0.20.1-linux64.tar.gz \
+    && tar -xvzf geckodriver* \
+    && mv geckodriver /usr/bin/ \
+    && chmod +x /usr/bin/geckodriver \
+    && rm -rf geckodriver*
 
 RUN pip install --disable-pip-version-check supervisor==3.3.1
 
