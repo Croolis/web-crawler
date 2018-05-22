@@ -6,11 +6,11 @@ from tldextract import extract
 from typing import Set, List
 
 
-def check_url(url: str) -> bool:
+def check_url(url: str, domain_url: str) -> bool:
     if url is None:
         return False
     url_domain = extract(url)
-    expected_domain = extract(ENTRY_POINT)
+    expected_domain = extract(domain_url)
     if url_domain.domain != expected_domain.domain or url_domain.suffix != expected_domain.suffix:
         return False
     parsed_url = urlparse(url)
@@ -31,7 +31,7 @@ def logout(driver: WebDriver):
 
 def get_actions(driver: WebDriver) -> List[str]:
     links = driver.find_elements_by_tag_name("a")
-    return list(filter(check_url, [link.get_attribute('href') for link in links]))
+    return [link.get_attribute('href') for link in links if check_url(link.get_attribute('href'), driver.current_url)]
 
 
 def crawl_page(driver: WebDriver, url: str, available_links: Set[str]) -> Set[str]:
