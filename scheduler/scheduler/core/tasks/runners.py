@@ -24,10 +24,12 @@ def crawl(task_config, subtask_config):
     entry_point = task_config['start_page']
     site_map = build_site_map(firefox_driver, entry_point)
     logout(firefox_driver)
+    firefox_driver.quit()
     return site_map
 
 
 def analyse(task_config, subtask_config, site_maps):
     firefox_driver = get_driver()
     escalations = check_for_escalation(firefox_driver, task_config, site_maps)
+    firefox_driver.quit()
     return escalations
