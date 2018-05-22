@@ -64,9 +64,13 @@
                 <td colspan="6" class="subtask-divider"><strong>Stage {{ forloop.counter }}</strong></td>
             </tr>
             {% for crawltask in crawltask_group %}
-                <tr>
+                <tr
+                    {% if crawltask.status == 'done' %}style="background-color: #eeffee"
+                    {% elif crawltask.status == 'error' %}style="background-color: #ffeeee"
+                    {% endif %}
+                >
                     <td>
-                        {% if crawltask.type == 'user_input' %}
+                        {% if crawltask.type == 'user_input' and crawltask.status == 'waiting' %}
                             <a style='color:red' href="/userform/{{crawltask.pk}}">{{crawltask.type}}</a>
                         {% else %}
                             {{crawltask.type}}

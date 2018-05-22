@@ -14,7 +14,7 @@ class IndexView(generic.ListView):
     context_object_name = 'tasks'
 
     def get_queryset(self):
-        return Task.objects.order_by('-finished_at', '-created_at')
+        return Task.objects.order_by('-created_at')
 
 
 class TaskView(generic.DetailView):
@@ -56,7 +56,11 @@ class UserFormView(generic.FormView):
         subtask = get_object_or_404(Subtask, pk=subtask_id, type=SUBTASK_TYPE.USER_INPUT)
         config = json.loads(subtask.configuration)
 
-        next_action = Subtask.objects.get(stage=subtask.stage, type=SUBTASK_TYPE.ACTION)
+        next_action = Subtask.objects.get(
+            parent_task=subtask.parent_task,
+            stage=subtask.stage,
+            type=SUBTASK_TYPE.ACTION,
+        )
         action_config = json.loads(next_action.configuration)
 
         action_config.setdefault('form_data', {})

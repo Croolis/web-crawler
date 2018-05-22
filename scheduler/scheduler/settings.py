@@ -9,7 +9,7 @@ SECRET_KEY = 'tdy(*nadi_b6hjv@zb*x8m1tl@1wz*%mz)#lxbhkhyz5@tb+0z'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['80.93.182.207']
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'scheduler.core.apps.CoreConfig',
@@ -59,6 +59,8 @@ WSGI_APPLICATION = 'scheduler.wsgi.application'
 
 DATABASES = {
     'default': {
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'scheduler_db',
         'USER': 'scheduler',

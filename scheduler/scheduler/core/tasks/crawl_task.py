@@ -72,8 +72,13 @@ def subtask_handler(subtask_id):
 
     try:
         handler(subtask, task_config, subtask_config)
-    except Exception:
+    except Exception as err:
         subtask.status = TASK_STATUS.ERROR
+        task = subtask.parent_task
+        if task.info is None:
+            task.info = ''
+        task.info += ' Subtask <stage {}, {}>: "{}";'.format(subtask.stage, subtask.type, err)
+        task.save(update_fields=['info'])
     else:
         subtask.status = TASK_STATUS.DONE
 
@@ -162,7 +167,7 @@ class TaskProcessor:
         if task.subtasks.filter(status=TASK_STATUS.ERROR).exists():
             task.status = TASK_STATUS.ERROR
             task.finished_at = timezone.now()
-            task.status.save()
+            task.save()
 
         # Running subtasks at current stage
         if not self.check_user_input(task):

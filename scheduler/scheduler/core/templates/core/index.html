@@ -22,7 +22,11 @@
             </tr>
         </thead>
         {% for task in tasks %}
-        <tr onclick="window.location='/{{task.pk}}';">
+        <tr onclick="window.location='/{{task.pk}}';"
+            {% if task.status == 'done' %}style="background-color: #eeffee"
+            {% elif task.status == 'error' %}style="background-color: #ffeeee"
+            {% endif %}
+        >
             <td>{{task.name}}</td>
             <td>{{task.status}}</td>
             <td>{{task.stage}}/{{task.stages_number}}</td>

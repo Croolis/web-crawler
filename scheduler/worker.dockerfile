@@ -7,13 +7,10 @@ RUN apt-get update \
     && apt-get install python-pip -y \
     && apt-get install python3-pip -y \
     && apt-get install python3-dev -y \
+    && apt-get install curl -y \
     && apt-get install wget -y
 
-RUN wget -q https://github.com/mozilla/geckodriver/releases/download/v0.20.1/geckodriver-v0.20.1-linux64.tar.gz \
-    && tar -xvzf geckodriver* \
-    && mv geckodriver /usr/bin/ \
-    && chmod +x /usr/bin/geckodriver \
-    && rm -rf geckodriver*
+RUN curl https://gist.githubusercontent.com/PreFX48/b40e22a9beb8ad17b6c7c1f989406dfb/raw/efb7b4b44135fb4bf0959b3a667bb81aa4dc2998/install_chrome_and_drivers.sh | bash
 
 RUN pip install --disable-pip-version-check supervisor==3.3.1
 
@@ -32,4 +29,6 @@ RUN chmod +x /usr/bin/runtiger
 RUN mkdir -p /var/run/scheduler/ \
     && chown -R www-data: /var/run/scheduler/
 
+RUN adduser --disabled-password --gecos "" tigeruser
+USER tigeruser
 ENTRYPOINT ["runtiger"]
