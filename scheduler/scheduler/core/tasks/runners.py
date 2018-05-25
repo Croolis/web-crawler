@@ -13,23 +13,41 @@ def get_driver():
 
 
 def act(task_config, subtask_config):
-    time.sleep(1)
+    driver = get_driver()
+    action_name = subtask_config['action']
+    form_data = subtask_config['form_data']
+    action_config = task_config['actions'][action_name]
+    user = action_config['user']
+    login(driver, task_config, user)
+    driver.get(action_config['page'])
+    if action_config['type'] == 'link':
+        pass
+    if action_config['type'] == 'form':
+        # fill form
+        for input_selector in form_data:
+            inp = driver.find_element_by_css_selector(input_selector)
+            inp.send_keys(form_data[input_selector])
+        # submit form
+        driver.find_element_by_css_selector(action_config['submit']).click()
+    if action_config['type'] == 'clickable':
+        # click on clickable object
+        driver.find_element_by_css_selector(action_config['submit']).clickable.click()
     return None
 
 
 def crawl(task_config, subtask_config):
-    firefox_driver = get_driver()
+    driver = get_driver()
     user = subtask_config['user']
-    login(firefox_driver, task_config, user)
+    login(driver, task_config, user)
     entry_point = task_config['start_page']
-    site_map = build_site_map(firefox_driver, entry_point)
-    logout(firefox_driver)
-    firefox_driver.quit()
+    site_map = build_site_map(driver, entry_point)
+    logout(driver)
+    driver.quit()
     return site_map
 
 
 def analyse(task_config, subtask_config, site_maps):
-    firefox_driver = get_driver()
-    escalations = check_for_escalation(firefox_driver, task_config, site_maps)
-    firefox_driver.quit()
+    driver = get_driver()
+    escalations = check_for_escalation(driver, task_config, site_maps)
+    driver.quit()
     return escalations
