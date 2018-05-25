@@ -1,5 +1,6 @@
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import ElementNotInteractableException
 
 from urllib.parse import urlparse, ParseResult
 from tldextract import extract
@@ -12,6 +13,24 @@ from scheduler.core.crawler.form import Form
 from time import sleep
 
 from typing import Set, List, Dict
+
+
+def get_element(node: bs):
+    # for XPATH we have to count only for nodes with same type!
+    length = len([sib for sib in node.previous_siblings if isinstance(sib, Tag)]) + 1
+    if length > 1:
+        return '%s:nth-child(%s)' % (node.name, length)
+    else:
+        return node.name
+
+
+def get_xpath(node: bs):
+    path = [get_element(node)]
+    for parent in node.parents:
+        if parent.name == 'body':
+            break
+        path.insert(0, get_element(parent))
+    return 'body > ' + ' > '.join(path)
 
 
 def extract_text(root: bs):
@@ -55,16 +74,14 @@ def is_new_page(crawled_pages: Dict[Action, str], page_url: str, page_content: s
 
 
 def check_url(url: str, domain_url: str) -> bool:
-    if url is None:
+    if url is None or 'javascript:;' in url or '#' in url:
         return False
     url_domain = extract(url)
     expected_domain = extract(domain_url)
     if url_domain.domain != expected_domain.domain or url_domain.suffix != expected_domain.suffix:
         return False
+    # search only current domain
     if url_domain.subdomain != expected_domain.subdomain:
-        return False
-    parsed_url = urlparse(url)
-    if parsed_url.scheme == 'javascript':
         return False
     return True
 
@@ -84,14 +101,15 @@ def get_actions(driver: WebDriver) -> Set[Action]:
     links = driver.find_elements_by_tag_name('a')
     actions = set([Link(link.get_attribute('href')) for link in links
                    if check_url(link.get_attribute('href'), driver.current_url)])  # type: Set[Action]
+    # actions = set()
 
-    forms = driver.find_elements_by_tag_name('form')
-    current_page = driver.current_url
-    for form in forms:
-        method = str(form.get_attribute('method')) or 'get'  # type: str
-        action = form.get_attribute('action') or 'get'
+    bs_page = bs(driver.page_source)
+    for form in bs_page.find_all('form'):
+        method = form.get('method').lower() or 'get'  # type: str
+        selector = get_xpath(form)
+        action = form.get('action') or ''
         status = 'p' if method == 'get' else 'c'  # type: str
-        actions.add(Form(status, current_page, action, form.get_attribute('class') or ''))
+        actions.add(Form(status, driver.current_url, selector, action))
     return actions
 
 
@@ -101,26 +119,41 @@ def perform_action(driver: WebDriver, action: Action):
     if isinstance(action, Link):
         pass
     if isinstance(action, Form):
-        submits = driver.find_elements_by_xpath('//form[@class="{}"]//input[@type="submit"]'.format(action.html_class)) +\
-                  driver.find_elements_by_xpath('//form[@class="{}"]//button[@type="submit"]'.format(action.html_class)) +\
-                  driver.find_elements_by_xpath('//form[@class="{}"]//input[@type="button"]'.format(action.html_class))
+        form = driver.find_element_by_css_selector(action.selector)
+        if form is None:
+            print("SOMETHING WRONG IS HAPPENING: FORM DISAPPEARED")
+        submits = form.find_elements_by_xpath('//input[@type="submit"]') + \
+            form.find_elements_by_xpath('//button[@type="submit"]') + \
+            form.find_elements_by_xpath('//input[@type="button"]')
 
-        inputs = list(filter(lambda x: x not in submits and x.get_attribute('type') != 'hidden',
-                             driver.find_elements_by_xpath('//form[@class="{}"]//input'.format(action.html_class))))
+        inputs = [inp for inp in form.find_elements_by_xpath('//input')
+                  if inp not in submits and inp.get_attribute('type') != 'hidden']
         for visible_input in inputs:
             if visible_input.get_attribute('type') == 'checkbox':
                 visible_input.click()
             else:
-                visible_input.send_keys('biba')
+                try:
+                    visible_input.send_keys('test')
+                except ElementNotInteractableException:
+                    pass
+        submits = form.find_elements_by_xpath('//input[@type="submit"]') + \
+            form.find_elements_by_xpath('//button[@type="submit"]') + \
+            form.find_elements_by_xpath('//input[@type="button"]')
         if len(submits) > 0:
             submits[0].click()
         else:
-            driver.find_elements_by_xpath('//form[@class="{}"]')[0].send_keys(Keys.ENTER)
+            print("NO WAY TO SUBMIT FORM")
 
 
-def crawl_page(driver: WebDriver, action: Action, performed_actions: Dict[Action, str]):
+def crawl_page(driver: WebDriver, action: Action,
+               performed_actions: Dict[Action, str], blacklisted_actions: Set[Action]):
+    print(action)
+    print(len(performed_actions))
+    print(len(blacklisted_actions))
     perform_action(driver, action)
     if not is_new_page(performed_actions, driver.current_url, driver.page_source):
+        print('looks like same template')
+        blacklisted_actions.add(action)
         return
     performed_actions[action] = driver.page_source
     action.url = driver.current_url
@@ -128,13 +161,14 @@ def crawl_page(driver: WebDriver, action: Action, performed_actions: Dict[Action
     # collect actions on this page
     actions = get_actions(driver)
     for action in actions:
-        if action.status == 'p' and action not in performed_actions:
-            crawl_page(driver, action, performed_actions)
+        if action.status == 'p' and action not in performed_actions and action not in blacklisted_actions:
+            crawl_page(driver, action, performed_actions, blacklisted_actions)
 
 
 def build_site_map(driver: WebDriver, entry_point: str) -> Dict[Action, str]:
     site_map = dict()  # type: Dict[Action, str]
-    crawl_page(driver, Link(entry_point), site_map)
+    blacklisted_actions = set()
+    crawl_page(driver, Link(entry_point), site_map, blacklisted_actions)
     return site_map
 
 
@@ -150,7 +184,7 @@ def check_for_escalation(driver: WebDriver, config: dict, site_maps: dict) -> Li
                 if link in site_maps[user]:
                     continue
                 driver.get(link)
-                if '404' in driver.page_source:
+                if '404' not in driver.page_source:
                     result.append((link, owner, user))
 
     return result
