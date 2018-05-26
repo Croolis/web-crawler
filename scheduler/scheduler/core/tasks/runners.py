@@ -32,6 +32,7 @@ def act(task_config, subtask_config):
     if action_config['type'] == 'clickable':
         # click on clickable object
         driver.find_element_by_css_selector(action_config['submit']).clickable.click()
+    driver.quit()
     return None
 
 
