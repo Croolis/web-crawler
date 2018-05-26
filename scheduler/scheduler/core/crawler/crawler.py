@@ -114,35 +114,36 @@ def get_actions(driver: WebDriver) -> Set[Action]:
 
 
 def perform_action(driver: WebDriver, action: Action):
-    if driver.current_url != action.page:
-        driver.get(action.page)
-    if isinstance(action, Link):
-        pass
-    if isinstance(action, Form):
-        form = driver.find_element_by_css_selector(action.selector)
-        if form is None:
-            print("SOMETHING WRONG IS HAPPENING: FORM DISAPPEARED")
-        submits = form.find_elements_by_xpath('//input[@type="submit"]') + \
-            form.find_elements_by_xpath('//button[@type="submit"]') + \
-            form.find_elements_by_xpath('//input[@type="button"]')
+    try:
+        if driver.current_url != action.page:
+            driver.get(action.page)
+        if isinstance(action, Link):
+            pass
+        if isinstance(action, Form):
+            form = driver.find_element_by_css_selector(action.selector)
+            if form is None:
+                print("SOMETHING WRONG IS HAPPENING: FORM DISAPPEARED")
+            submits = form.find_elements_by_xpath('//input[@type="submit"]') + \
+                form.find_elements_by_xpath('//button[@type="submit"]') + \
+                form.find_elements_by_xpath('//input[@type="button"]')
 
-        inputs = [inp for inp in form.find_elements_by_xpath('//input')
-                  if inp not in submits and inp.get_attribute('type') != 'hidden']
-        for visible_input in inputs:
-            if visible_input.get_attribute('type') == 'checkbox':
-                visible_input.click()
-            else:
-                try:
-                    visible_input.send_keys('test')
-                except ElementNotInteractableException:
-                    pass
-        submits = form.find_elements_by_xpath('//input[@type="submit"]') + \
-            form.find_elements_by_xpath('//button[@type="submit"]') + \
-            form.find_elements_by_xpath('//input[@type="button"]')
-        if len(submits) > 0:
+            inputs = [inp for inp in form.find_elements_by_xpath('//input')
+                      if inp not in submits and inp.get_attribute('type') != 'hidden']
+            for visible_input in inputs:
+                if visible_input.get_attribute('type') == 'checkbox':
+                    visible_input.click()
+                else:
+                    try:
+                        visible_input.send_keys('test')
+                    except ElementNotInteractableException:
+                        pass
+            submits = form.find_elements_by_xpath('//input[@type="submit"]') + \
+                form.find_elements_by_xpath('//button[@type="submit"]') + \
+                form.find_elements_by_xpath('//input[@type="button"]')
             submits[0].click()
-        else:
-            print("NO WAY TO SUBMIT FORM")
+        return True
+    except Exception:
+        return False
 
 
 def crawl_page(driver: WebDriver, action: Action,
@@ -150,7 +151,8 @@ def crawl_page(driver: WebDriver, action: Action,
     print(action)
     print(len(performed_actions))
     print(len(blacklisted_actions))
-    perform_action(driver, action)
+    if not perform_action(driver, action):
+        return
     if not check_url(driver.current_url, action.page):
         # it redirected outside of website
         return
