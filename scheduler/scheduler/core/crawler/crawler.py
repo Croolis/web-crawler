@@ -105,10 +105,10 @@ def get_actions(driver: WebDriver) -> Set[Action]:
 
     bs_page = bs(driver.page_source)
     for form in bs_page.find_all('form'):
-        method = form.get('method').lower() or 'get'  # type: str
+        method = form.get('method') or 'get'  # type: str
         selector = get_xpath(form)
         action = form.get('action') or ''
-        status = 'p' if method == 'get' else 'c'  # type: str
+        status = 'p' if method.lower() == 'get' else 'c'  # type: str
         actions.add(Form(status, driver.current_url, selector, action))
     return actions
 
@@ -151,6 +151,9 @@ def crawl_page(driver: WebDriver, action: Action,
     print(len(performed_actions))
     print(len(blacklisted_actions))
     perform_action(driver, action)
+    if not check_url(driver.current_url, action.page):
+        # it redirected outside of website
+        return
     if not is_new_page(performed_actions, driver.current_url, driver.page_source):
         print('looks like same template')
         blacklisted_actions.add(action)
