@@ -90,6 +90,7 @@ def login(driver: WebDriver, config: dict, username: str):
     driver.get(config['start_page'])
     for cookie in config['users'][username]:
         driver.add_cookie({'name': cookie, 'value': config['users'][username][cookie]})
+    driver.get(config['start_page'])
 
 
 def logout(driver: WebDriver):
