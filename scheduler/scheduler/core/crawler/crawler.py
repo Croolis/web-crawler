@@ -186,11 +186,10 @@ def check_for_escalation(driver: WebDriver, config: dict, site_maps: dict) -> Li
         for owner in site_maps.keys():
             if owner == user:
                 continue
-            for link in site_maps[owner]:
-                if link in site_maps[user]:
+            for action in site_maps[owner]:
+                if action in site_maps[user]:
                     continue
-                driver.get(link)
-                if '404' not in driver.page_source:
-                    result.append((link, owner, user))
+                if perform_action(action, config['start_page']) is True and '404' not in driver.page_source:
+                    result.append((action, owner, user))
 
     return result
