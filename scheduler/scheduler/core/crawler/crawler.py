@@ -62,7 +62,7 @@ def page_likelihood(url: ParseResult, page_content: str, another_url: ParseResul
     another_page_tags = set()
     for tag in another_page_content.findAll():
         another_page_tags.add((str(tag.name), frozenset({k: tuple(tag.attrs[k]) for k in tag.attrs})))
-    return len(page_tags & another_page_tags) / min(len(page_tags), len(another_page_tags))
+    return len(page_tags & another_page_tags) / len(page_tags | another_page_tags)
 
 
 def is_new_page(crawled_pages: Dict[Action, str], page_url: str, page_content: str):
