@@ -1,5 +1,4 @@
 from selenium.webdriver.remote.webdriver import WebDriver
-from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import ElementNotInteractableException
 
 from urllib.parse import urlparse, ParseResult
@@ -16,7 +15,6 @@ from typing import Set, List, Dict
 
 
 def get_element(node: bs):
-    # for XPATH we have to count only for nodes with same type!
     length = len([sib for sib in node.previous_siblings if isinstance(sib, Tag)]) + 1
     if length > 1:
         return '%s:nth-child(%s)' % (node.name, length)
@@ -111,7 +109,7 @@ def get_actions(driver: WebDriver) -> Set[Action]:
         action = form.get('action') or ''
         status = 'p' if method.lower() == 'get' else 'c'  # type: str
         actions.add(Form(status, driver.current_url, selector, action))
-    return actions
+    return sorted(actions)
 
 
 def perform_action(driver: WebDriver, action: Action):
@@ -182,6 +180,7 @@ def check_for_escalation(driver: WebDriver, config: dict, site_maps: dict) -> Li
     result = []
     for user in site_maps.keys():
         driver.get(config['start_page'])
+        logout(driver)
         login(driver, config, user)
         for owner in site_maps.keys():
             if owner == user:
@@ -189,7 +188,7 @@ def check_for_escalation(driver: WebDriver, config: dict, site_maps: dict) -> Li
             for action in site_maps[owner]:
                 if action in site_maps[user]:
                     continue
-                if perform_action(action, config['start_page']) is True and '404' not in driver.page_source:
+                if perform_action(driver, action) is True and '404' not in driver.page_source:
                     result.append((action, owner, user))
 
     return result
