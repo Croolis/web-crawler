@@ -83,7 +83,8 @@ class Subtask(models.Model):
 
 
 class CrawlLink(models.Model):
-    url = models.URLField()
+    key = models.TextField()
+    data = models.BinaryField()
     task = models.ForeignKey(Task, related_name='crawl_links', on_delete=models.CASCADE)
     stage = models.IntegerField()
     user = models.CharField(max_length=32)
@@ -93,7 +94,7 @@ class CrawlLink(models.Model):
             self.task.name,
             self.stage,
             self.user,
-            self.url,
+            self.key,
         )
 
     class Meta:

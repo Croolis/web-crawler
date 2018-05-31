@@ -3,6 +3,7 @@ import json
 import os
 import redis
 import tasktiger
+import pickle
 
 # --------  Django imports  -------------
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'scheduler.settings')
@@ -13,6 +14,7 @@ from django.utils import timezone
 
 # --------  Project imports  -------------
 from scheduler.core.constants import TASK_STATUS, SUBTASK_TYPE
+from scheduler.core.crawler.link import Link
 from scheduler.core.tasks import runners
 # ========================================
 
@@ -27,8 +29,9 @@ def crawl_handler(subtask, task_config, subtask_config):
     task = subtask.parent_task
     stage = subtask.stage
     user = subtask_config['user']
-    for link in links:
-        task.crawl_links.create(user=user, stage=stage, url=link)
+    for link, data in links.items():
+        binary = pickle.dumps(data)
+        task.crawl_links.create(user=user, stage=stage, key=link.page, data=binary)
 
 
 def analysis_handler(subtask, task_config, subtask_config):
@@ -37,14 +40,15 @@ def analysis_handler(subtask, task_config, subtask_config):
     users = task_config['users'].keys()
     links = {}
     for user in users:
-        links[user] = task.crawl_links.filter(stage=stage, user=user).values_list('url', flat=True)
+        query = task.crawl_links.filter(stage=stage, user=user).values_list('key', 'data')
+        links[user] = {Link(key): pickle.loads(data) for (key, data) in query}
 
     breaches = runners.analyse(task_config, subtask_config, links)
 
     for link, owner, intruder in breaches:
         task.security_breaches.create(
             stage=stage,
-            url=link,
+            url=link.page,
             owner=owner,
             intruder=intruder,
         )
