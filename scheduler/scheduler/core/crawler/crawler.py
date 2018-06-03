@@ -66,7 +66,7 @@ def page_likelihood(url: ParseResult, page_content: str, another_url: ParseResul
 def is_new_page(crawled_pages: Dict[Action, str], page_url: str, page_content: str):
     page_url = urlparse(page_url)
     for action in crawled_pages:
-        if page_likelihood(page_url, page_content, urlparse(action.url), crawled_pages[action]) > 0.95:
+        if page_likelihood(page_url, page_content, urlparse(action.page), crawled_pages[action]) > 0.95:
             return False
     return True
 

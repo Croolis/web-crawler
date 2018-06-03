@@ -1,6 +1,8 @@
 # --------  Non-Django imports  ---------
 import json
 import os
+from traceback import format_tb
+
 import redis
 import tasktiger
 import pickle
@@ -81,7 +83,8 @@ def subtask_handler(subtask_id):
         task = subtask.parent_task
         if task.info is None:
             task.info = ''
-        task.info += ' Subtask <stage {}, {}>: "{}";'.format(subtask.stage, subtask.type, err)
+
+        task.info += ' Subtask <stage {}, {}>: "{}", Traceback: "{}";'.format(subtask.stage, subtask.type, err, format_tb(err.__traceback__))
         task.save(update_fields=['info'])
     else:
         subtask.status = TASK_STATUS.DONE
