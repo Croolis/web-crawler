@@ -95,7 +95,7 @@ def logout(driver: WebDriver):
     driver.delete_all_cookies()
 
 
-def get_actions(driver: WebDriver) -> Set[Action]:
+def get_actions(driver: WebDriver) -> List[Action]:
     sleep(1)
     links = driver.find_elements_by_tag_name('a')
     actions = set([Link(link.get_attribute('href')) for link in links
@@ -188,7 +188,8 @@ def check_for_escalation(driver: WebDriver, config: dict, site_maps: dict) -> Li
             for action in site_maps[owner]:
                 if action in site_maps[user]:
                     continue
-                if perform_action(driver, action) is True and '404' not in driver.page_source:
+                if perform_action(driver, action) is True and '404' not in driver.page_source\
+                        and is_new_page(site_maps[user], driver.current_url, driver.page_source):
                     result.append((action, owner, user))
 
     return result

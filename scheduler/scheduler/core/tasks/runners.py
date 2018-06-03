@@ -13,7 +13,7 @@ def get_driver():
 def act(task_config, subtask_config):
     driver = get_driver()
     action_name = subtask_config['action']
-    form_data = subtask_config['form_data']
+    form_data = subtask_config.get('form_data', [])
     action_config = task_config['actions'][action_name]
     user = action_config['user']
     login(driver, task_config, user)
